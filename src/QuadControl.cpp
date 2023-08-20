@@ -45,6 +45,7 @@ void QuadControl::Init()
 
   minMotorThrust = config->Get(_config + ".minMotorThrust", 0);
   maxMotorThrust = config->Get(_config + ".maxMotorThrust", 100);
+
 #else
   // load params from PX4 parameter system
   //TODO
@@ -69,11 +70,46 @@ VehicleCommand QuadControl::GenerateMotorCommands(float collThrustCmd, V3F momen
   // You'll need the arm length parameter L, and the drag/thrust ratio kappa
 
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
+  // 
+  // 
+  // 
+  // 
+  // Define inverce matix for 
+  //        Ftot     = +F1 +F2 +F3 +F4  
+  //        Mx/l     = +F1 -F2 +F3 -F4  
+  //        My/l     = +F1 +F2 -F3 -F4  
+  //        Mz/kappa = -F1 +F2 +F3 -F4  
+  //      
+  //       [Ftot , Mx/l , My/l , Mz/kappa]T  = R x [F1 , F2 , F3 , F4]T
+  // 
+  //       [F1 , F2 , F3 , F4]T = inv(R) x [Ftot , Mx/l , My/l , Mz/kappa]T
+  // 
+    //float L; // length of arm from centre of quadrocopter to motor
+    float l = L / sqrt(2);
+    // M = 4*inv(R)
+    float M[4][4] = {{ +1.0f , +1.0f , +1.0f , +1.0f }, \
+                     { +1.0f , -1.0f , +1.0f , +1.0f }, \
+                     { +1.0f , +1.0f , -1.0f , +1.0f }, \
+                     { +1.0f , -1.0f , -1.0f , -1.0f }};
+    float c     = collThrustCmd;
+    float p_bar = momentCmd.x / l;
+    float q_bar = momentCmd.y / l;
+    float r_bar = momentCmd.z * kappa;
 
-  cmd.desiredThrustsN[0] = mass * 9.81f / 4.f; // front left
-  cmd.desiredThrustsN[1] = mass * 9.81f / 4.f; // front right
-  cmd.desiredThrustsN[2] = mass * 9.81f / 4.f; // rear left
-  cmd.desiredThrustsN[3] = mass * 9.81f / 4.f; // rear right
+    float F1 = (M[0][0] * c + M[0][1] * p_bar + M[0][2] * q_bar + M[0][3] * r_bar)/4; // front left
+    float F2 = (M[1][0] * c + M[1][1] * p_bar + M[1][2] * q_bar + M[1][3] * r_bar)/4; // front right
+    float F3 = (M[2][0] * c + M[2][1] * p_bar + M[2][2] * q_bar + M[2][3] * r_bar)/4; // rear right
+    float F4 = (M[3][0] * c + M[3][1] * p_bar + M[3][2] * q_bar + M[3][3] * r_bar)/4; // rear left
+
+    cmd.desiredThrustsN[0] = F1;
+    cmd.desiredThrustsN[1] = F2;
+    cmd.desiredThrustsN[2] = F3;
+    cmd.desiredThrustsN[3] = F4;
+
+  //cmd.desiredThrustsN[0] = mass * 9.81f / 4.f; // front left
+  //cmd.desiredThrustsN[1] = mass * 9.81f / 4.f; // front right
+  //cmd.desiredThrustsN[2] = mass * 9.81f / 4.f; // rear left
+  //cmd.desiredThrustsN[3] = mass * 9.81f / 4.f; // rear right
 
   /////////////////////////////// END STUDENT CODE ////////////////////////////
 
@@ -97,8 +133,11 @@ V3F QuadControl::BodyRateControl(V3F pqrCmd, V3F pqr)
   V3F momentCmd;
 
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
+  V3F pqr_err = (pqrCmd - pqr);
+  V3F I(Ixx,Iyy,Izz);
 
-  
+
+  momentCmd = I*kpPQR * pqr_err;
 
   /////////////////////////////// END STUDENT CODE ////////////////////////////
 
