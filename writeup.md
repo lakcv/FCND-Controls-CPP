@@ -61,13 +61,32 @@ after implemnting the `RollPitchControl()` and setting the `kpBank = 1`:
 </p>
 
 ___
-- Implement altitude controller in C++.
+
+### Position/velocity and yaw angle control (scenario 3)
+- _*Implement altitude controller in C++.*_  
+I've used PID cpntroller to stabilize the altitude where:  
+  k_p_z = `kpVelZ * kpPosZ`  
+  k_d_z = `kpVelZ`  
+  k_i_z = `KiPosZ`   
+ 
+So, the acceleration on global Z axes is :  
+  `u1_bar = kpVelZ * kpPosZ * posZ_err + kpVelZ * velZ_err + KiPosZ * integratedAltitudeError + accelZCmd`  
+
+Taking into account that thrust is in the direction of negative local (body) z axes :  
+`thrust = -mass * (u1_bar - 9.81f) / R(2, 2);`  
 
 ___
-2.3. Implement lateral position control in C++.
+- _*Implement lateral position control in C++.*_  
+Here I use PD controller, where  
+  k_p_xy = `kpVelXY * kpPosXY`  
+  k_d_xy = `kpVelXY`  
+A new function `V3F ClipV3F(V3F vector, float limit);` limits the magnitude of a certain 3D vector.  
+I've used it to limit the XY speed and the XY acceleration.  
 
 ___
-2.5. Implement yaw control in C++.
+- _*Implement yaw control in C++.*_  
+
+
 
 ___
 2.6. Implement calculating the motor commands given commanded thrust and moments in C++.
