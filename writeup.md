@@ -29,22 +29,42 @@ ___
 </p>
 
 ___
-#### 2.1 Implemented body rate control in C++.  
-Use the following conversions to calculate the propeller angular velocities:
+#### 2.1 Implemented body rate control in C++. 
+I use the following math in the GenerateMotorCommands()
+```code
+  // Define inverce matix for 
+  //        Ftot     = +F1 +F2 +F3 +F4  
+  //        Mx/l     = +F1 -F2 +F3 -F4  
+  //        My/l     = +F1 +F2 -F3 -F4  
+  //        Mz/kappa = -F1 +F2 +F3 -F4  
+  //      
+  //       [Ftot , Mx/l , My/l , Mz*kappa]T  = R x [F1 , F2 , F3 , F4]T
+  // 
+  //       [F1 , F2 , F3 , F4]T = inv(R) x [Ftot , Mx/l , My/l , Mz*kappa]T
+```
+
+
+BodyRateControl()
+```code
+  V3F pqr_err = (pqrCmd - pqr);
+  V3F I(Ixx,Iyy,Izz);
+  momentCmd = I * kpPQR * pqr_err;
+```
+Setting the `kpPQR` to (83, 83, 20) is allow to pass the scenario 2.
+
+___
+The following gif image demonstrates the control behaiour   
+after implemnting the `RollPitchControl()` and setting the `kpBank = 1`:
+
 <p align="center">
-<img src="animations/propeller_angular_velocities.png" width="200"/>
+<img src="animations/scenario_2.1.gif" width="500"/>
 </p>
 
-
+___
+- Implement altitude controller in C++.
 
 ___
-2.2. Implement roll pitch control in C++.  
-
-___
-2.3. Implement altitude controller in C++.
-
-___
-2.4. Implement lateral position control in C++.
+2.3. Implement lateral position control in C++.
 
 ___
 2.5. Implement yaw control in C++.
