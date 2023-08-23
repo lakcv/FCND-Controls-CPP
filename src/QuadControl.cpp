@@ -173,6 +173,13 @@ V3F QuadControl::RollPitchControl(V3F accelCmd, Quaternion<float> attitude, floa
   float b_x_a = R(0, 2);
   float b_y_a = R(1, 2);
 
+  if (sqrt(accelCmd.x * accelCmd.x + accelCmd.y * accelCmd.x)> maxAccelXY) {
+      V3F vector(accelCmd.x, accelCmd.y, 0);
+      vector = ClipV3F(vector, maxAccelXY);
+      accelCmd.x = vector.x;
+      accelCmd.y = vector.y;
+  }
+
   float b_x_c_target = -accelCmd.x / (collThrustCmd / mass);
   float b_y_c_target = -accelCmd.y / (collThrustCmd / mass);
 
