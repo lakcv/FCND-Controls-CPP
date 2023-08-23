@@ -96,7 +96,7 @@ VehicleCommand QuadControl::GenerateMotorCommands(float collThrustCmd, V3F momen
     float c     = collThrustCmd;
     float p_bar = momentCmd.x / l;
     float q_bar = momentCmd.y / l;
-    float r_bar = momentCmd.z * kappa;
+    float r_bar = momentCmd.z / kappa;
 
     float F1 = (M[0][0] * c + M[0][1] * p_bar + M[0][2] * q_bar + M[0][3] * r_bar)/4; // front left
     float F2 = (M[1][0] * c + M[1][1] * p_bar + M[1][2] * q_bar + M[1][3] * r_bar)/4; // front right
@@ -228,10 +228,7 @@ float QuadControl::AltitudeControl(float posZCmd, float velZCmd, float posZ, flo
   float posZ_err = posZCmd - posZ;
   float velZ_err = velZCmd - velZ;
   integratedAltitudeError += posZ_err * dt * dt;
-
   float u1_bar = kpVelZ * kpPosZ * posZ_err + kpVelZ * velZ_err + KiPosZ * integratedAltitudeError + accelZCmd;
-
-
   thrust = -mass * (u1_bar - 9.81f) / R(2, 2);
 
   /////////////////////////////// END STUDENT CODE ////////////////////////////
@@ -302,12 +299,15 @@ float QuadControl::YawControl(float yawCmd, float yaw)
 
   float yawRateCmd=0;
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
-  float yawErr = (float)(fmodf((yawCmd - yaw) + (float)M_PI, 2.0f * (float)M_PI) - (float)M_PI);
-  if (abs(yawErr) > 0.1f) {
-      yawErr = yawErr;
+  float yawErr = fmodf(yawCmd - yaw, 2.0f * (float)F_PI) ;
+  if (yawErr > (float)F_PI) {
+      yawErr -= (2.0f * (float)F_PI);
+  }
+  else if (yawErr < - (float)F_PI) {
+      yawErr += (2.0f * (float)F_PI);
   }
   yawRateCmd = kpYaw * yawErr;
-  //, 2.0f * 3.14159265359f) - 3.14159265359f;
+
   /////////////////////////////// END STUDENT CODE ////////////////////////////
 
   return yawRateCmd;

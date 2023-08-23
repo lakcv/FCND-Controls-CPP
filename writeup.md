@@ -80,7 +80,7 @@ ___
 Here I use PD controller, where  
   k_p_xy = `kpVelXY * kpPosXY`  
   k_d_xy = `kpVelXY`  
-A new function `V3F ClipV3F(V3F vector, float limit);` limits the magnitude of a certain 3D vector.  
+A new function `V3F ClipV3F(V3F vector, float limit);` limits the magnitude of a 3D vector to a certain value.  
 I've used it to limit the XY speed and the XY acceleration.  
 
 ___
