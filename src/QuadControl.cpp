@@ -89,7 +89,7 @@ VehicleCommand QuadControl::GenerateMotorCommands(float collThrustCmd, V3F momen
     //float L; // length of arm from centre of quadrocopter to motor
     float l = L / sqrt(2);
     // M = 4*inv(R)
-    float M[4][4] = {{ +1.0f , +1.0f , +1.0f , +1.0f }, \
+    float M[4][4] = {{ +1.0f , +1.0f , +1.0f , -1.0f }, \
                      { +1.0f , -1.0f , +1.0f , +1.0f }, \
                      { +1.0f , +1.0f , -1.0f , +1.0f }, \
                      { +1.0f , -1.0f , -1.0f , -1.0f }};
@@ -232,10 +232,14 @@ float QuadControl::AltitudeControl(float posZCmd, float velZCmd, float posZ, flo
   // b_z = R33 = R(2,2)
   // u1_bar = kpPosZ * posZ_err + kpVelZ * velZ_err + KiPosZ * integratedAltitudeError + accelZCmd
 
+  velZCmd = CONSTRAIN(velZCmd, -maxAscentRate, maxDescentRate);
   float posZ_err = posZCmd - posZ;
   float velZ_err = velZCmd - velZ;
   integratedAltitudeError += posZ_err * dt * dt ;
+  
+
   float u1_bar = kpVelZ * kpPosZ * posZ_err + kpVelZ * velZ_err + KiPosZ * integratedAltitudeError + accelZCmd;
+ 
   thrust = -mass * (u1_bar - 9.81f) / R(2, 2);
 
   /////////////////////////////// END STUDENT CODE ////////////////////////////
@@ -277,14 +281,13 @@ V3F QuadControl::LateralPositionControl(V3F posCmd, V3F velCmd, V3F pos, V3F vel
   V3F posError = (posCmd - pos);
   posError.z = 0;
 
-  V3F velError = (velCmd - vel);
+  V3F velCmd_tot = velCmd + kpPosXY* posError;
+  velCmd = ClipV3F(velCmd_tot, maxSpeedXY);
+
+  V3F velError = (velCmd_tot - vel);
   velError.z = 0;
-
-  V3F velErrorTot = velError + kpPosXY* posError;
-  velErrorTot = ClipV3F(velErrorTot, maxSpeedXY);
-
   
-  accelCmd += kpVelXY * velErrorTot;
+  accelCmd += kpVelXY * velError;
   accelCmd = ClipV3F(accelCmd, maxAccelXY);
   /////////////////////////////// END STUDENT CODE ////////////////////////////
 
@@ -345,7 +348,7 @@ VehicleCommand QuadControl::RunControl(float dt, float simTime)
 V3F ClipV3F(V3F vector, float limit)
 {
     if (limit > 0) {
-        float vector_norm = sqrt(vector.x * vector.x + \
+        /*float vector_norm = sqrt(vector.x * vector.x + \
             vector.y * vector.y + \
             vector.z * vector.z);
         if (vector_norm > limit) {
@@ -353,7 +356,11 @@ V3F ClipV3F(V3F vector, float limit)
             vector.x *= normalizer;
             vector.y *= normalizer;
             vector.z *= normalizer;
+        }*/
+        if (vector.mag() > limit) {
+            vector = vector.norm() * limit;
         }
+
     }
     return vector;
 }
