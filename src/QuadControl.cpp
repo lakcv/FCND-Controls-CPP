@@ -179,6 +179,9 @@ V3F QuadControl::RollPitchControl(V3F accelCmd, Quaternion<float> attitude, floa
   float b_x_c_target = -accelCmd.x / (collThrustCmd / mass);
   float b_y_c_target = -accelCmd.y / (collThrustCmd / mass);
 
+  b_x_c_target = CONSTRAIN(b_x_c_target, -maxTiltAngle, maxTiltAngle);
+  b_y_c_target = CONSTRAIN(b_y_c_target, -maxTiltAngle, maxTiltAngle);
+
   float b_x_c_dot = kpBank * (b_x_c_target - b_x_a);
   float b_y_c_dot = kpBank * (b_y_c_target - b_y_a);
 
@@ -232,10 +235,7 @@ float QuadControl::AltitudeControl(float posZCmd, float velZCmd, float posZ, flo
   float posZ_err = posZCmd - posZ;
   float velZ_err = velZCmd - velZ;
   integratedAltitudeError += posZ_err * dt * dt ;
-  
-
   float u1_bar = kpVelZ * kpPosZ * posZ_err + kpVelZ * velZ_err + KiPosZ * integratedAltitudeError + accelZCmd;
- 
   thrust = -mass * (u1_bar - 9.81f) / R(2, 2);
 
   /////////////////////////////// END STUDENT CODE ////////////////////////////
