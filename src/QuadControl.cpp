@@ -84,7 +84,7 @@ VehicleCommand QuadControl::GenerateMotorCommands(float collThrustCmd, V3F momen
   //      
   //       [Ftot , Mx/l , My/l , Mz*kappa]T  = R x [F1 , F2 , F3 , F4]T
   // 
-  //       [F1 , F2 , F3 , F4]T = inv(R) x [Ftot , Mx/l , My/l , Mz*kappa]T
+  //       [F1 , F2 , F3 , F4]T = inv(R) x [Ftot , Mx/l , My/l , Mz/kappa]T
   // 
     //float L; // length of arm from centre of quadrocopter to motor
     float l = L / sqrt(2);
@@ -108,10 +108,6 @@ VehicleCommand QuadControl::GenerateMotorCommands(float collThrustCmd, V3F momen
     cmd.desiredThrustsN[2] = F3;
     cmd.desiredThrustsN[3] = F4;
 
-  //cmd.desiredThrustsN[0] = mass * 9.81f / 4.f; // front left
-  //cmd.desiredThrustsN[1] = mass * 9.81f / 4.f; // front right
-  //cmd.desiredThrustsN[2] = mass * 9.81f / 4.f; // rear left
-  //cmd.desiredThrustsN[3] = mass * 9.81f / 4.f; // rear right
 
   /////////////////////////////// END STUDENT CODE ////////////////////////////
 
@@ -313,7 +309,7 @@ float QuadControl::YawControl(float yawCmd, float yaw)
   if (yawErr > (float)F_PI) {
       yawErr -= (2.0f * (float)F_PI);
   }
-  else if (yawErr < - (float)F_PI) {
+  else if (yawErr < -(float)F_PI) {
       yawErr += (2.0f * (float)F_PI);
   }
   yawRateCmd = kpYaw * yawErr;
@@ -348,19 +344,9 @@ VehicleCommand QuadControl::RunControl(float dt, float simTime)
 V3F ClipV3F(V3F vector, float limit)
 {
     if (limit > 0) {
-        /*float vector_norm = sqrt(vector.x * vector.x + \
-            vector.y * vector.y + \
-            vector.z * vector.z);
-        if (vector_norm > limit) {
-            float normalizer = (float)(limit / vector_norm);
-            vector.x *= normalizer;
-            vector.y *= normalizer;
-            vector.z *= normalizer;
-        }*/
         if (vector.mag() > limit) {
             vector = vector.norm() * limit;
         }
-
     }
     return vector;
 }
