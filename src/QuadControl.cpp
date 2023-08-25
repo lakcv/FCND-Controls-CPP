@@ -73,26 +73,23 @@ VehicleCommand QuadControl::GenerateMotorCommands(float collThrustCmd, V3F momen
 
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
   // 
-  // 
-  // 
-  // 
   // Define inverce matix for 
   //        Ftot     = +F1 +F2 +F3 +F4  
   //        Mx/l     = +F1 -F2 +F3 -F4  
   //        My/l     = +F1 +F2 -F3 -F4  
   //        Mz/kappa = -F1 +F2 +F3 -F4  
   //      
-  //       [Ftot , Mx/l , My/l , Mz*kappa]T  = R x [F1 , F2 , F3 , F4]T
+  //       [Ftot , Mx/l , My/l , Mz/kappa]T  = R x [F1 , F2 , F3 , F4]T
   // 
   //       [F1 , F2 , F3 , F4]T = inv(R) x [Ftot , Mx/l , My/l , Mz/kappa]T
-  // 
-    //float L; // length of arm from centre of quadrocopter to motor
-    float l = L / sqrt(2);
-    // M = 4*inv(R)
+
+    float l = L / sqrt(2); // L- length of arm from centre of quadrocopter to motor
+
     float M[4][4] = {{ +1.0f , +1.0f , +1.0f , -1.0f }, \
                      { +1.0f , -1.0f , +1.0f , +1.0f }, \
                      { +1.0f , +1.0f , -1.0f , +1.0f }, \
                      { +1.0f , -1.0f , -1.0f , -1.0f }};
+
     float c     = collThrustCmd;
     float p_bar = momentCmd.x / l;
     float q_bar = momentCmd.y / l;
@@ -107,7 +104,6 @@ VehicleCommand QuadControl::GenerateMotorCommands(float collThrustCmd, V3F momen
     cmd.desiredThrustsN[1] = F2;
     cmd.desiredThrustsN[2] = F3;
     cmd.desiredThrustsN[3] = F4;
-
 
   /////////////////////////////// END STUDENT CODE ////////////////////////////
 
